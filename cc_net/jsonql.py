@@ -1115,6 +1115,7 @@ def open_remote_file(url: str, cache: Path = None) -> Iterable[str]:
     """Download the files at the given url to memory and opens it as a file.
     Assumes that the file is small, and fetch it when this function is called.
     """
+    print(f"mydebug:call:open_remote_file: cache file to:{cache}")
     if cache and cache.exists():
         return open_read(cache)
 

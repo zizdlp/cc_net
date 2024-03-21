@@ -350,6 +350,7 @@ def _get_segment(tmp_output: Path, doc: dict) -> str:
 
 
 def _mine_shard(conf: Config, hashes: List[Path], shard: int, output: Path) -> str:
+    print(f"mydebug:call _mine_shard with: conf:{conf},shard:{shard},output:{output}")
     assert conf.pipeline
     tmp_output = tmp(output)
     if "hashes" in conf.experiments:

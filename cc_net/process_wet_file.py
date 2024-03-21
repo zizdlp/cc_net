@@ -242,7 +242,8 @@ class CCShardReader(CCSegmentsReader):
             return self._segments
         segments = cc_segments(self.dump, self.cache_dir)
         n = len(segments)#64000,16000*4
-        n=1 # mydebug wraning!!!!!! hardcode it to 1 segment,use 1 shard; 
+        print(f"mydebug:len segments is:{n}")
+        n=40 # mydebug wraning!!!!!! hardcode it to 1 segment,use 1 shard; 
         if self.num_shards < 0:
             self.num_shards = n // self.num_segments_per_shard
         i_min = (self.shard * n) // self.num_shards
