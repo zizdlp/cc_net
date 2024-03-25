@@ -17,7 +17,7 @@ pipeline=['dedup', 'lid', 'keep_lang', 'sp', 'lm', 'pp_bucket', 'drop', 'split_b
 ```
 
 ```shell
-python -m cc_net --dump 2019-09 --cache_dir /root/wxl_folder/cache_data --num_shards 1 --hash_in_mem 1 --num_segments_per_shard 40
+python -m cc_net --dump 2019-09 --cache_dir /app/cache_data --num_shards 1 --hash_in_mem 1 --num_segments_per_shard 40
 
 pipeline=['dedup', 'lid', 'keep_lang', 'sp', 'lm', 'pp_bucket', 'drop', 'split_by_lang']
 1. 生成hash
