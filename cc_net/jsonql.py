@@ -7,6 +7,7 @@
 """
 Manipulate files containing one json per line.
 """
+
 import argparse
 import collections
 import contextlib
@@ -239,6 +240,7 @@ class Transformer:
         self._logger = logging.getLogger(self.__cls.__name__)
 
     def __call__(self, x):
+        # print("mydebug:call Transformer __call__")
         assert self.ready, f"{self} is not ready."
         if x is None:
             return
@@ -273,6 +275,7 @@ class Transformer:
         self.__last_log = time.time()
 
     def map(self, source: Iterable) -> Iterator:
+        # print("mydebug:call transformer map:--> may trigger iter")
         if self.ready:
             for x in source:
                 yield self(x)
@@ -405,7 +408,9 @@ def run_pipes(
     - processes: number of processes to use. -1 means all CPU available.
     - chunksize: chunksize for multiprocessing.Pool.imap_unordered
     """
+
     expect_json = len(fns) and isinstance(fns[0], Transformer) and fns[0].expect_json
+    print(f"mydebug:run_pipes:expect_json:{expect_json}")
     if expect_json and inputs is None:
         fns = (JsonReader(),) + fns
     transformers = []
@@ -419,15 +424,17 @@ def run_pipes(
 
     log = logging.getLogger(__name__).info
     if inputs is None:
+        print(f"mydebug: in run_pipes before call open_read:{file}")
         data: Iterable = open_read(file)
     else:
         data = inputs
 
     if processes == -1:
         processes = os.cpu_count() or 0
-
+    print(f"mydebug:data is:{data}")
     with contextlib.suppress(BrokenPipeError), contextlib.ExitStack() as stack:
         if transformers:
+            print(f"mydebug: run_pipes is transformers:{transformers}")
             log(f"preparing {transformers}")
             transform = stack.enter_context(compose(transformers))
             if processes <= 1:
@@ -447,11 +454,14 @@ def run_pipes(
                 )
 
         for fn in pipes:
+            print(f"mydebug: run_pipes is fn:{fn}")
             if isinstance(fn, Transformer):
+                print(f"mydebug: run_pipes  fn is Transformer:{fn},call map")
                 data = fn.map(data)
             else:
+                print(f"mydebug: run_pipes  fn is not Transformer:{fn}")
                 data = fn(data)
-
+        print(f"mydebug:in run_pipes: pre write_jsons:data:{data},output:{output}")
         write_jsons(data, output)
 
 
@@ -491,6 +501,7 @@ def read_jsons(file: ReadableFileLike, strict=False) -> Iterator[dict]:
 
 
 def write_jsons(source: Iterable[dict], file: WritableFileLike) -> None:
+    print(f"mydebug call write_jsons:{source},{file}")
     eol = os.linesep
     with open_write(file) as o:
         for res in source:
@@ -902,17 +913,13 @@ def get_or_set(dictionary, key, default):
 class SimpleIO(Protocol):
     """A subset of methods from TextIO."""
 
-    def close(self) -> None:
-        ...
+    def close(self) -> None: ...
 
-    def write(self, line: str) -> int:
-        ...
+    def write(self, line: str) -> int: ...
 
-    def __enter__(self) -> "SimpleIO":
-        ...
+    def __enter__(self) -> "SimpleIO": ...
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        ...
+    def __exit__(self, exc_type, exc_value, traceback): ...
 
 
 def open_read(filename: ReadableFileLike) -> Iterable[str]:
@@ -926,6 +933,7 @@ def open_read(filename: ReadableFileLike) -> Iterable[str]:
 
     `open_read` will decompress gzip files, given they have ".gz" suffix.
     """
+    print("mydebug:call jsonql open_read")
     if filename is None:
         return sys.stdin
 
@@ -1019,7 +1027,7 @@ def open_write(
 
 
 def parse_size(size):
-    unit_map = {"B": 1, "K": 1024, "M": 1024 ** 2, "G": 1024 ** 3}
+    unit_map = {"B": 1, "K": 1024, "M": 1024**2, "G": 1024**3}
     unit = size[-1].upper()
     assert (
         unit in unit_map
@@ -1102,7 +1110,7 @@ def request_get_content(url: str, n_retry: int = 3) -> bytes:
             warnings.warn(
                 f"Swallowed error {e} while downloading {url} ({i} out of {n_retry})"
             )
-            time.sleep(10 * 2 ** i)
+            time.sleep(10 * 2**i)
     dl_time = time.time() - t0
     dl_speed = len(r.content) / dl_time / 1024
     logging.info(
@@ -1149,7 +1157,7 @@ def sharded_file(file_pattern: Path, mode: str, max_size: str = "4G") -> MultiFi
     assert 0 < n < 8
     assert "?" * n in name, f"The '?' need to be adjacents in {file_pattern}"
     assert "r" not in mode
-    files = (folder / name.replace("?" * n, f"%0{n}d" % i) for i in range(10 ** n))
+    files = (folder / name.replace("?" * n, f"%0{n}d" % i) for i in range(10**n))
 
     return MultiFile(files, mode, max_size)
 

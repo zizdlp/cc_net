@@ -114,6 +114,7 @@ def merge(hashes_1, hashes_2, output):
 
 
 def merge_shard(hash_files, output):
+    print("mydebug:call dedup merge_shard")
     h = FlatHashSet()
     h.load(hash_files[0])
     for hash_file in hash_files[1:]:
@@ -275,6 +276,13 @@ def remove_duplicates_sharded(
 
 
 def compute_hashes(content) -> Optional[np.ndarray]:
+    """
+    首先，判断参数 content 是否为空，如果为空则返回 None。
+    将 content 按照换行符 “\n” 分割成一系列行，并存储在列表 lines 中。
+    遍历每一行内容，先将内容进行处理（normalize_for_dedup），然后以 utf-8 编码的形式将其转换为 bytes 类型，并计算其 sha1 哈希值。取哈希值的前 HASH_SIZE 个字节。
+    将每行的哈希值存储在 numpy 数组 hashes 中，数据类型为 bytes，长度为 HASH_SIZE。
+    最后，将 hashes 转换为指定类型 HASH_TYPE 的 numpy 数组，并返回。                                           
+    """
     if not content:
         return None
     lines = content.split("\n")
@@ -289,6 +297,7 @@ def compute_hashes(content) -> Optional[np.ndarray]:
         dtype=np.dtype((bytes, HASH_SIZE)),
         count=len(lines),
     )
+    # print(f"mydebug:hashes is:{hashes}")
     return np.ndarray(dtype=HASH_TYPE, buffer=hashes.data, shape=hashes.shape)
 
 
@@ -352,13 +361,16 @@ class HashesCollector(jsonql.Transformer):
         return summ
 
     def do(self, doc: dict) -> None:
+        # 这里是doc 级别
+        # print("mydebug:call HashesCollector do:compute_hashes:",doc.get(self.field))### 真实文本
         doc_hashes = compute_hashes(doc.get(self.field))
         if doc_hashes is None:
             return
-        self.hashes.add(doc_hashes)
+        self.hashes.add(doc_hashes)#遍历所有doc，每个doc 有len(lines)个hash
         self.n_lines += doc_hashes.size
 
     def close(self):
+        print("mydebug:call HashesCollector close")
         if self.output and self.hashes:
             self.hashes.dump(self.output)
             self.log(f"Saved {len(self.hashes)} hashes to {self.output}")

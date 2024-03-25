@@ -248,11 +248,11 @@ def _transpose(iterable: Sequence[Tuple[Any, ...]], n=-1) -> Tuple[List, ...]:
 
 def hashes(conf: Config) -> List[Path]:
     """Computes hashes for each shard."""
-
+    
     hashes_dir = conf.output_dir / "hashes" / conf.dump
     outputs = [hashes_dir / f"{shard:04d}.bin" for shard in range(conf.num_shards)]
     missing_outputs = [(shard, o) for shard, o in enumerate(outputs) if not o.exists()]
-
+    print(f"mydebug:call hashes:{outputs},{missing_outputs}")
     if not missing_outputs:
         return outputs
 
@@ -269,6 +269,7 @@ def hashes(conf: Config) -> List[Path]:
 
 
 def _hashes_shard(conf: Config, shard: int, output: Path):
+    print("mydebug:call _hashes_shard")
     tmp_output = tmp(output)
     jsonql.run_pipes(
         dedup.HashesCollector(field="raw_content", output=tmp_output),
@@ -283,6 +284,7 @@ HASHES_IN_MEM = [0, 1, 2, 5, 10, 20, 50, 100, 200, 400]
 
 def mine(conf: Config) -> List[Path]:
     """Remove dups, run LID and LMs, and split by lang and quality."""
+    print(f"mydebug:call mine: pipeline:{conf.pipeline}")
     mined_dir = conf.get_mined_dir()
     if conf.will_split:
         # Give a directories when splitting
@@ -429,7 +431,7 @@ def _mine_shard(conf: Config, hashes: List[Path], shard: int, output: Path) -> s
     )
 
     pipeline = filter(None, (steps[s] for s in conf.pipeline))
-
+    print(f"mydebug:call _mine_shard new pipeline steps is:{steps}")
     jsonql.run_pipes(
         *pipeline,
         inputs=cc_shard,
@@ -627,7 +629,7 @@ def main(config: str = "base", **config_as_dict: Any) -> None:
         )
     conf = conf._replace(**{k: v for (k, v) in config_as_dict.items() if v is not None})
 
-    print(f"Will run cc_net.mine.main with the following config:", conf)
+    print(f"Will run cc_net.mine.main with the following config:{conf}")
 
     all_files = mine(conf)
     if conf.will_split:
