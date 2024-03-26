@@ -61,6 +61,7 @@ class Classifier(jsonql.Transformer):
         rounding: int = 2,
     ):
         super().__init__()
+        print("mydebug: call Classifier")
         self.model = model
         assert model.exists(), f"Model {model} doesn't exist."
         self.field = field
@@ -75,13 +76,16 @@ class Classifier(jsonql.Transformer):
         self.cnt: Dict[str, int] = {}
 
     def _prepare(self):
+        print(f"mydebug:Classifier _prepare Loading:{self.model}")
         self.log(f"Loading {self.model}")
         self.fasttext_model = fasttext.load_model(str(self.model))
+        print("mydebug:Classifier _prepare Loading:done")
 
     def predict(self, text):
         return predict(self.fasttext_model, text.replace("\n", ""), k=self.top)
 
     def do(self, doc: dict) -> Optional[dict]:
+        # print("mydebug:Classifier call do")
         text = doc.get(self.field, None)
         if not text:
             return None
@@ -91,7 +95,9 @@ class Classifier(jsonql.Transformer):
             return doc
 
         self.n_doc += 1
+
         labels, scores = self.predict(text)
+        # print(f"mydebug:Classifier call do predict labels scores:{labels},{scores}")
         scores.round(self.rounding, out=scores)
         for l in labels:
             self.cnt[l] = self.cnt.get(l, 0) + 1
@@ -110,6 +116,7 @@ class Classifier(jsonql.Transformer):
             doc[self.out_field + "_score"] = scores[0]
         else:
             doc[self.out_field] = {l: s for l, s in zip(labels, scores)}
+        # print(f"mydebug:Classifier call do predict output doc:{doc}")
         return doc
 
     def summary(self):

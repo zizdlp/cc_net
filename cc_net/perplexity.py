@@ -84,6 +84,7 @@ class MultiSentencePiece(jsonql.Transformer):
         normalize: bool = False,
     ):
         super().__init__()
+        print("mydebug:call MultiSentencePiece init") #没有调用成功 似乎
         self.field = field
         self.output_field = output_field
         self.normalize = normalize
@@ -99,6 +100,7 @@ class MultiSentencePiece(jsonql.Transformer):
         self.sp: Dict[str, sentencepiece.SentencePieceProcessor] = {}
 
     def _prepare(self) -> None:
+        print("mydebug:call MultiSentencePiece _prepare")
         for lang in self._prefetch:
             assert (
                 self.get_sp(lang) is not None
@@ -121,10 +123,12 @@ class MultiSentencePiece(jsonql.Transformer):
         return sp
 
     def do(self, document: dict) -> Optional[dict]:
+        # print(f"mydebug:call MultiSentencePiece Do doc:{document}") #
         text = document[self.field]
         if self.normalize:
             text = text_normalizer.normalize(text)
-        sp = self.get_sp(document.get("language"))
+        sp = self.get_sp(document.get("language"))## 获取对应语言的模型
+        print(f"mydebug sp is:{sp}")
         if sp is None:
             return document
         tokenized = sp.encode_as_pieces(text)

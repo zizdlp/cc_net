@@ -346,8 +346,11 @@ class MultiTransformer(Transformer):
         return f"<{pipeline}>"
 
     def do(self, x):
-        for t in self.transformers:
+        # print(f"mydebug:call MultiTransformer do pre:x is:{x}")
+        for index,t in enumerate(self.transformers):
+            # print(f"mydebug:call MultiTransformer do index is:{index}, t is {t}")
             x = t(x)
+            # print(f"mydebug:call MultiTransformer do index is:{index}, after x is {x}"),最后一步似乎失败了
         return x
 
     def _prepare(self):
@@ -420,7 +423,7 @@ def run_pipes(
         if not t.parallelisable:
             break
         transformers.append(t)
-    pipes = fns[len(transformers) :]
+    pipes = fns[len(transformers) :] # mydebug 分成两部分，一部分是transformers，另一部分给pipes
 
     log = logging.getLogger(__name__).info
     if inputs is None:
@@ -454,12 +457,12 @@ def run_pipes(
                 )
 
         for fn in pipes:
-            print(f"mydebug: run_pipes is fn:{fn}")
+            print(f"mydebug: run_pipes of pipe line fn:{fn}")
             if isinstance(fn, Transformer):
-                print(f"mydebug: run_pipes  fn is Transformer:{fn},call map")
+                # print(f"mydebug: run_pipes fn is Transformer:{fn},call map")
                 data = fn.map(data)
             else:
-                print(f"mydebug: run_pipes  fn is not Transformer:{fn}")
+                # print(f"mydebug: run_pipes fn is not Transformer:{fn}")
                 data = fn(data)
         print(f"mydebug:in run_pipes: pre write_jsons:data:{data},output:{output}")
         write_jsons(data, output)

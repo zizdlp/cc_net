@@ -56,14 +56,14 @@ class AbstractDedupHashSet(Sized, Iterable[np.uint64]):
         if not isinstance(h, np.ndarray):
             h = np.array(h, dtype=HASH_TYPE)
         if contains is None:
-            contains = self.__contains__(h)
+            contains = self.__contains__(h) ## mydebug:调用dict的__contains__实现，判断key是否存在
 
         self.__setitem__(h, contains)
         return contains
 
     def merge(self, keys, values):
         contains = self.__contains__(keys)
-        self.__setitem__(keys, contains | values)
+        self.__setitem__(keys, contains | values) ### mydebug:或者之前bin存在，或者当前bin重复导致vlues是1（重复不一定导致）
 
     def dump(self, filename):
         return self.dump_np(filename)
@@ -81,6 +81,7 @@ class AbstractDedupHashSet(Sized, Iterable[np.uint64]):
         items = np.load(str(filename))
         keys = items["k"].copy()
         values = items["v"].copy()
+        # print(f"mydebug:AbstractDedupHashSet load_np keys:{keys},values:{values}")
         self.merge(keys, values)
 
     def dump_np2(self, filename):

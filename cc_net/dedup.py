@@ -297,11 +297,16 @@ def compute_hashes(content) -> Optional[np.ndarray]:
         dtype=np.dtype((bytes, HASH_SIZE)),
         count=len(lines),
     )
-    # print(f"mydebug:hashes is:{hashes}")
+    # print(f"mydebug:hashes==== is key is:{hashes}") # [b'r\x95\xce0x\x85\x00\x95' b'\x8a\xc6\x02\xd4\x1bAl\x10'...]
     return np.ndarray(dtype=HASH_TYPE, buffer=hashes.data, shape=hashes.shape)
 
 
 def finalize_doc(doc, field, hashes=None):
+    """
+    hashes 是经过mask的，即若是0，说明重复
+    根据hashes以及标记位seen，判断是否保留
+    """
+    # print(f"mydebug:dedup call finalize_doc doc:{doc}")
     content = doc.get(field)
     lines = content.split("\n")
     n_chars = len(content)
@@ -314,7 +319,7 @@ def finalize_doc(doc, field, hashes=None):
 
     # Remove duplicates inside doc
     seen: Set[int] = set()
-    original_line_ids = doc.get("line_ids", range(len(hashes)))
+    original_line_ids = doc.get("line_ids", range(len(hashes)))# get id 若不存在 使用range(len(hashes))，其实就是不存在。
     line_ids = []
     new_lines = []
     for l, line, h in zip(original_line_ids, lines, hashes):
@@ -328,6 +333,7 @@ def finalize_doc(doc, field, hashes=None):
     n_chars_kept = len(doc[field])
     doc["length"] = n_chars_kept
     doc["line_ids"] = line_ids
+    # print(f"mydebug:dedup call finalize_doc saved doc:{doc}")
     return n_chars, n_chars_kept
 
 
@@ -366,13 +372,14 @@ class HashesCollector(jsonql.Transformer):
         doc_hashes = compute_hashes(doc.get(self.field))
         if doc_hashes is None:
             return
-        self.hashes.add(doc_hashes)#遍历所有doc，每个doc 有len(lines)个hash
+        self.hashes.add(doc_hashes)#遍历所有doc，每个doc 有len(lines)个hash,self.hashes是FlatHashSet，key是doc_hashes。
         self.n_lines += doc_hashes.size
 
     def close(self):
         print("mydebug:call HashesCollector close")
         if self.output and self.hashes:
             self.hashes.dump(self.output)
+            # print(f"mydebug: close dir:{self.output}, hashes saved:{self.hashes}")#:data/hashs/2019-09/0000.bin,{12341243:1,12341241:0,...}
             self.log(f"Saved {len(self.hashes)} hashes to {self.output}")
             # Save the number of hashes.
             self.num_hashes_end = len(self.hashes)
@@ -420,17 +427,26 @@ class DuplicatesRemover(jsonql.Transformer):
         )
 
     def do(self, doc: dict) -> Optional[dict]:
+        """"
+        mydebug:外部遍历所有doc：
+        1. 读取 doc level content
+        2. 计算此 doc hash
+        3. seen 就 mask hash 为 0
+        3. 似乎无法对重复元素留1个.
+        """
+        # print(f"mydebug:call DuplicatesRemover:do:{self.collect},doc:{doc}")#false
         content = doc.get(self.field)
         if not content:
             return None
-        doc_hashes = compute_hashes(content)
+        doc_hashes = compute_hashes(content) #array of hash
 
         assert self.duplicates is not None
         seen = (
-            self.duplicates.add(doc_hashes)
+            self.duplicates.add(doc_hashes) ### 这个则是重新判断contains
             if self.collect
-            else self.duplicates[doc_hashes]
-        )
+            else self.duplicates[doc_hashes] ### 实际上就是存储的 hash 合并后存储的v，
+        )# 默认collect false
+        # print(f"mydebug:DuplicatesRemover seen is:{seen}")
         keep = seen < True
         kept = keep.sum()
         if kept == 0:
