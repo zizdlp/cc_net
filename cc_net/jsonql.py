@@ -350,7 +350,7 @@ class MultiTransformer(Transformer):
         for index,t in enumerate(self.transformers):
             # print(f"mydebug:call MultiTransformer do index is:{index}, t is {t}")
             x = t(x)
-            # print(f"mydebug:call MultiTransformer do index is:{index}, after x is {x}"),最后一步似乎失败了
+            # print(f"mydebug:call MultiTransformer do index is:{index}, after x is {x}")
         return x
 
     def _prepare(self):

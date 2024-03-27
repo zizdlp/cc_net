@@ -128,11 +128,12 @@ class MultiSentencePiece(jsonql.Transformer):
         if self.normalize:
             text = text_normalizer.normalize(text)
         sp = self.get_sp(document.get("language"))## 获取对应语言的模型
-        print(f"mydebug sp is:{sp}")
+        # print(f"mydebug sp is:{sp}")
         if sp is None:
             return document
         tokenized = sp.encode_as_pieces(text)
         document[self.output_field] = " ".join(tokenized)
+        # print(f"mydebug:MultiSentencePiece doc:{document}")
         return document
 
 
@@ -209,6 +210,7 @@ class DocLM(jsonql.Transformer):
         return lm
 
     def do(self, document: dict) -> dict:
+        # print(f"mydebug:call DocLM Do:{document}") 
         lines = self.get_lines(document)
         model = self.get_lm(document.get("language"))
         if not lines or not model:
@@ -224,6 +226,7 @@ class DocLM(jsonql.Transformer):
             doc_length += length
 
         document[self.output_field] = round(pp(doc_log_score, doc_length), 1)
+        # print(f"mydebug:call DocLM Do result:{document}")
         return document
 
     def summary(self):
@@ -289,6 +292,7 @@ class PerplexityBucket(jsonql.Transformer):
 
     def do(self, doc: dict) -> dict:
         doc["bucket"] = self.get_bucket(doc)
+        # print(f"mydebug:PerplexityBucket do:{doc}")
         return doc
 
 
