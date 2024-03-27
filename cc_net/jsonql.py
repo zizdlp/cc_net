@@ -739,6 +739,7 @@ class split(Transformer):
         return lambda doc: pattern.format(**{c: doc[c] for c in candidates})
 
     def do(self, doc):
+        # print("mydebug:call jsonql split do")
         filename = self.split_fn(doc)
         if not filename:
             return
@@ -747,7 +748,8 @@ class split(Transformer):
             if self.mkdir:
                 Path(filename).parent.mkdir(parents=True, exist_ok=True)
             self.o[filename] = open_write(filename)
-        print(json.dumps(doc, ensure_ascii=False), file=self.o[filename], flush=True)
+        # print(f"mydebug:call jsonql split do done filename:{filename}, dumps:{doc}")
+        print(json.dumps(doc, ensure_ascii=False), file=self.o[filename], flush=True) # 追加写
 
     def summary(self):
         summ = super().summary()
