@@ -430,7 +430,7 @@ class DuplicatesRemover(jsonql.Transformer):
         """"
         mydebug:外部遍历所有doc：
         1. 读取 doc level content
-        2. 计算此 doc hash
+        2. 计算此 doc hashs
         3. seen 就 mask hash 为 0
         3. 似乎无法对重复元素留1个.
         """

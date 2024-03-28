@@ -348,9 +348,9 @@ class MultiTransformer(Transformer):
     def do(self, x):
         # print(f"mydebug:call MultiTransformer do pre:x is:{x}")
         for index,t in enumerate(self.transformers):
-            # print(f"mydebug:call MultiTransformer do index is:{index}, t is {t}")
+            print(f"mydebug:call MultiTransformer do index is:{index}, t is {t}")
             x = t(x)
-            # print(f"mydebug:call MultiTransformer do index is:{index}, after x is {x}")
+            print(f"mydebug:call MultiTransformer do index is:{index}, after x is {x}")
         return x
 
     def _prepare(self):
