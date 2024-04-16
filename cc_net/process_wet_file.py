@@ -20,8 +20,8 @@ from bs4 import BeautifulSoup  # type: ignore
 
 from cc_net import jsonql
 
-WET_URL_ROOT = "https://commoncrawl.s3.amazonaws.com"
-
+# WET_URL_ROOT = "https://commoncrawl.s3.amazonaws.com"
+WET_URL_ROOT = "https://data.commoncrawl.org"
 
 logger = logging.getLogger(__name__)
 
@@ -130,13 +130,13 @@ def parse_warc_file(lines: Iterable[str], min_len: int = 1) -> Iterator[dict]:
     """
     输入是[segment,....segment]
     输出json格式
-    {   
-        'url': 'http://5west9sh.jugem.jp/?cid=3', 
-        'date_download': '2019-02-15T19:43:59Z', 
-        'digest': 'sha1:V4ZRQQMZMO2VJR72UZP4Z6H5T23NRT75', 
-        'length': 4962, 
-        'nlines': 112, 
-        'source_domain': '5west9sh.jugem.jp', 
+    {
+        'url': 'http://5west9sh.jugem.jp/?cid=3',
+        'date_download': '2019-02-15T19:43:59Z',
+        'digest': 'sha1:V4ZRQQMZMO2VJR72UZP4Z6H5T23NRT75',
+        'length': 4962,
+        'nlines': 112,
+        'source_domain': '5west9sh.jugem.jp',
         'title': 'その'
         raw_content:''
         'cc_segment': ''
@@ -264,7 +264,7 @@ class CCShardReader(CCSegmentsReader):
         segments = cc_segments(self.dump, self.cache_dir)
         n = len(segments)  # 64000,16000*4
         print(f"mydebug:len segments is:{n}")
-        n = 4  # mydebug wraning!!!!!! hardcode it to 1 segment,use 1 shard;
+        n = 40  # mydebug wraning!!!!!! hardcode it to 1 segment,use 1 shard;
         if self.num_shards < 0:
             self.num_shards = n // self.num_segments_per_shard
         i_min = (self.shard * n) // self.num_shards
