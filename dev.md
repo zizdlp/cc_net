@@ -37,3 +37,6 @@ zcat data/mined/2019-09/eo_all_0000.json.gz | head -1 | jq .
 ```
 
 python -m cc_net --dump 2019-18 --cache_dir /root/wxl_folder/cached_data --num_shards 10 --hash_in_mem 10
+
+
+python -m cc_net --dump 2019-18 --cache_dir /metadata0/wxl_data/cached_data/commoncrawl_data/ --output_dir /metadata0/wxl_data/data  --num_shards 1 --lm_dir /metadata0/wxl_data/lm_sp

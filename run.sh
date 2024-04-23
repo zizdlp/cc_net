@@ -1,0 +1,1 @@
+python -m cc_net --dump 2019-18 --cache_dir /metadata0/wxl_data/cached_data/commoncrawl_data/ --output_dir /metadata0/wxl_data/data  --num_shards 40 --lm_dir /metadata0/wxl_data/lm_sp --hash_in_mem 40

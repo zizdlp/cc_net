@@ -155,3 +155,6 @@ You can peak at those files using UNIX tools `zcat` and [`jq`](https://stedolan.
 
 By contributing to `cc_net`, you agree that your contributions will be licensed
 under the LICENSE file in the root directory of this source tree.
+
+
+python -m cc_net --dump 2019-18 --cache_dir /metadata0/wxl_data/cached_data/commoncrawl_data/ --output_dir /metadata0/wxl_data/data  --num_shards 1 --lm_dir /metadata0/wxl_data/lm_sp

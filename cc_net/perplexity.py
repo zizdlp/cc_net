@@ -206,7 +206,7 @@ class DocLM(jsonql.Transformer):
         self.lm[lang] = lm
         load_time = time.time() - start_load
         self.log(f"Loaded {self.models[lang]} (took {load_time / 60:.1f}min)")
-
+        self.log(f"mydebug:load doclm Loaded {self.models[lang]} (took {load_time / 60:.1f}min)")
         return lm
 
     def do(self, document: dict) -> dict:
